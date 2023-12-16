@@ -9,6 +9,11 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import com.bignerdranch.android.sunset.databinding.ActivityMainBinding
 
+// OPTION 1
+// Add the ability to reverse the sunset after it is completed,
+// so your user can press for a sunset, and then press a second
+// time to get a sunrise.
+// • Hint: you will need to build another AnimatorSet to do this
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
