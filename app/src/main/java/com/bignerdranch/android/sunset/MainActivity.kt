@@ -4,7 +4,6 @@ import android.animation.AnimatorSet
 import android.animation.ArgbEvaluator
 import android.animation.ObjectAnimator
 import android.os.Bundle
-import android.view.View
 import android.view.animation.AccelerateInterpolator
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
@@ -13,8 +12,6 @@ import com.bignerdranch.android.sunset.databinding.ActivityMainBinding
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
-    private lateinit var sunsetAnimatorSet: AnimatorSet
-    private lateinit var sunriseAnimatorSet: AnimatorSet
 
     private val blueSkyColor: Int by lazy {
         ContextCompat.getColor(this, R.color.blue_sky)
@@ -26,35 +23,33 @@ class MainActivity : AppCompatActivity() {
         ContextCompat.getColor(this, R.color.night_sky)
     }
 
-    // keep track of the current state
-    private var isSunset = false
+    private var isSunset = true // Flag to track sunset or sunrise state
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        initializeSunsetAnimation()
-        initializeSunriseAnimation()
-
-        // view toggles btwn sunset & sunrise animations (using current state) to start the appropriate animator
         binding.scene.setOnClickListener {
-            if (isSunset) {
-                sunriseAnimatorSet.start()
-            } else {
-                sunsetAnimatorSet.start()
-            }
-            isSunset = !isSunset
+            toggleAnimation()
         }
     }
 
-    // individual sunset animation
+    private fun toggleAnimation() {
+        if (isSunset) {
+            initializeSunsetAnimation()
+        } else {
+            initializeSunriseAnimation()
+        }
+        isSunset = !isSunset // Toggle the state for the next click
+    }
+
     private fun initializeSunsetAnimation() {
-        val sunYStart = binding.sun.translationY
-        val sunYEnd = binding.sky.height.toFloat() - binding.sun.height.toFloat()
+        val sunYStart = binding.sun.top.toFloat()
+        val sunYEnd = binding.sky.height.toFloat()
 
         val heightAnimator = ObjectAnimator
-            .ofFloat(binding.sun, View.TRANSLATION_Y, sunYStart, sunYEnd)
+            .ofFloat(binding.sun, "y", sunYStart, sunYEnd)
             .setDuration(3000)
         heightAnimator.interpolator = AccelerateInterpolator()
 
@@ -68,19 +63,20 @@ class MainActivity : AppCompatActivity() {
             .setDuration(1500)
         nightSkyAnimator.setEvaluator(ArgbEvaluator())
 
-        sunsetAnimatorSet = AnimatorSet()
-        sunsetAnimatorSet.play(heightAnimator)
+        val animatorSet = AnimatorSet()
+        animatorSet.play(heightAnimator)
             .with(sunsetSkyAnimator)
             .before(nightSkyAnimator)
+        animatorSet.start()
     }
 
-    // individual sunrise animation
     private fun initializeSunriseAnimation() {
-        val sunYStart = binding.sky.height.toFloat() - binding.sun.height.toFloat()
-        val sunYEnd = binding.sun.translationY
+        // Create the sunrise animation (similar to sunset)
+        val sunYEnd = binding.sun.top.toFloat()
+        val sunYStart = binding.sky.height.toFloat()
 
         val heightAnimator = ObjectAnimator
-            .ofFloat(binding.sun, View.TRANSLATION_Y, sunYStart, sunYEnd)
+            .ofFloat(binding.sun, "y", sunYStart, sunYEnd)
             .setDuration(3000)
         heightAnimator.interpolator = AccelerateInterpolator()
 
@@ -94,9 +90,10 @@ class MainActivity : AppCompatActivity() {
             .setDuration(1500)
         blueSkyAnimator.setEvaluator(ArgbEvaluator())
 
-        sunriseAnimatorSet = AnimatorSet()
-        sunriseAnimatorSet.play(heightAnimator)
+        val animatorSet = AnimatorSet()
+        animatorSet.play(heightAnimator)
             .with(sunriseSkyAnimator)
             .before(blueSkyAnimator)
+        animatorSet.start()
     }
 }
